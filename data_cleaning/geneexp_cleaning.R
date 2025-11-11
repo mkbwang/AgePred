@@ -3,7 +3,11 @@ library(DESeq2)
 library(dplyr)
 library(arrow)
 rm(list=ls())
+
 folder <- "extdata/multitissue_transcriptome"
+
+# folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/extdata/multitissue_transcriptome"
+
 
 metadata <- read.table(file.path(folder, "meta_filtered.txt"), sep='\t',
                        quote="")
@@ -26,10 +30,12 @@ library(sva)
 bc_counts <- ComBat(dat=normalized_counts,
                     batch=as.factor(metadata$Batch))
 
-# write_feather(as.data.frame(bc_counts),
-#               file.path(folder, "combined", "all_samples.feather"))
-# write.csv(metadata,
-#           file.path(folder, "combined", "metadata.csv"), quote=FALSE)
+
+write_feather(as.data.frame(bc_counts),
+              file.path(folder, "combined", "all_samples.feather"))
+write.csv(metadata,
+          file.path(folder, "combined", "metadata.csv"), quote=FALSE)
+
 
 
 # retain healthy samples
@@ -48,7 +54,9 @@ metadata_adipose <- metadata_healthy %>% filter(Tissue == "Adipose;")
 metadata_list <- list(metadata_heart, metadata_blood, metadata_retina, metadata_adipose)
 
 
+set.seed(2025)
 for (j in 1:length(metadata_list)){
+  print(j)
 
   metadata <- metadata_list[[j]]
   tissue_name <- strsplit(unique(metadata$Tissue), split=";")[[1]][1]
@@ -70,6 +78,7 @@ for (j in 1:length(metadata_list)){
   metadata_train <- metadata[train_ids, ]
   counts_train <- counts_combined[, train_ids]
 
+
   write.csv(as.data.frame(counts_train),
             file.path(folder, "train", sprintf("%s_counts.csv", tissue_name)),
             quote=FALSE)
@@ -77,7 +86,7 @@ for (j in 1:length(metadata_list)){
             quote=FALSE)
 
   metadata_test <- metadata[test_ids, ]
-  counts_test <- counts_healthy[, test_ids]
+  counts_test <- counts_combined[, test_ids]
 
   write.csv(as.data.frame(counts_test),
             file.path(folder, "test", sprintf("%s_counts.csv", tissue_name)),

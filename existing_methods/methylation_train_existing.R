@@ -4,9 +4,15 @@ library(deconvolution)
 rm(list=ls())
 # sum-to-one constraint
 
+
 methylation_folder <- "extdata/methylation/"
 method_folder <- "new_methods/"
 output_folder <- "existing_methods/"
+
+# methylation_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/extdata/methylation/"
+# method_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/new_methods/"
+# output_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/existing_methods/"
+
 
 studies_info <- read.csv(file.path(methylation_folder, "studies_info.csv"))
 studies_info <- studies_info %>% filter(Total >= 80 & Max_Age - Min_Age > 30)
@@ -37,7 +43,8 @@ cspline_result <- cspline_result %>% arrange(Pval)
 # } else{
 #     marker_feature <- cspline_result$Feature[1:100]
 # }
-marker_feature <- cspline_result$Feature[cspline_result$Pval < 0.05]
+marker_feature <- cspline_result$Feature # [cspline_result$Pval < 0.05]
+
 
 
 train_metadata <- read.csv(file.path(methylation_folder, "train",

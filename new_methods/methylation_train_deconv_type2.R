@@ -8,8 +8,13 @@ library(openxlsx)
 rm(list=ls())
 # sum-to-one constraint and smoothness penalty
 
+
 methylation_folder <- "extdata/methylation/" # TODO: folder to change
 method_folder <- "new_methods/"
+
+# methylation_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/extdata/methylation/" # TODO: folder to change
+# method_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/new_methods"
+
 
 studies_info <- read.csv(file.path(methylation_folder, "studies_info.csv"))
 studies_info <- studies_info %>% filter(Total >= 80 & Max_Age - Min_Age > 30)

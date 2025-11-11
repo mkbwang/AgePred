@@ -8,8 +8,13 @@ library(openxlsx)
 rm(list=ls())
 # sum-to-one constraint and smoothness penalty
 
+
 geneexp_folder <- "extdata/multitissue_transcriptome/"
 method_folder <- "new_methods/"
+
+# geneexp_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/extdata/multitissue_transcriptome/"
+# method_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/new_methods/"
+
 
 input_files <- list.files(file.path(geneexp_folder, "train"), pattern="*_counts.csv")
 tissues <- sapply(input_files, function(fname){

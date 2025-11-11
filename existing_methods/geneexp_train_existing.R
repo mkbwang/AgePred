@@ -8,6 +8,11 @@ geneexp_folder <- "extdata/multitissue_transcriptome/"
 method_folder <- "new_methods/"
 output_folder <- "existing_methods/"
 
+# geneexp_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/extdata/multitissue_transcriptome/"
+# method_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/new_methods/"
+# output_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/existing_methods/"
+
+
 input_files <- list.files(file.path(geneexp_folder, "train"), pattern="*_counts.csv")
 tissues <- sapply(input_files, function(fname){
     strsplit(fname, split="[_]")[[1]][1]
@@ -36,7 +41,11 @@ cspline_result <- cspline_result %>% arrange(Pval)
 # } else{
 #     marker_feature <- cspline_result$Feature[1:100]
 # }
-marker_feature <- cspline_result$Feature[cspline_result$Pval < 0.05]
+
+# marker_feature <- cspline_result$Feature[cspline_result$Pval < 0.05]
+
+marker_feature <- cspline_result$Feature# [cspline_result$Pval < 0.05]
+
 
 train_metadata <- read.csv(file.path(geneexp_folder, "train",
                                      sprintf("metadata_%s.csv", tissue)))

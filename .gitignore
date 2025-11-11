@@ -1,3 +1,4 @@
+
 .Rhistory
 .Rproj.user/
 *.png
@@ -11,3 +12,4 @@ archived/
 *.Rproj
 *.txt
 extdata/
+

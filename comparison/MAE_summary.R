@@ -3,9 +3,15 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 library(openxlsx)
+
 metadata_folder <- "extdata"
 deconv_folder <- "new_methods/deconvolution"
 competitor_folder <- "existing_methods/output"
+
+# metadata_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/extdata"
+# deconv_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/new_methods/deconvolution"
+# competitor_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/existing_methods/output"
+
 
 # first look at methylation
 studies_info <- read.csv(file.path(metadata_folder, "methylation", "studies_info.csv"))
@@ -125,8 +131,11 @@ for (j in 1:length(studies)){
 
 }
 
-write.csv(methylation_result_df, "comparison/methylation_result.csv",
-          row.names=FALSE, quote=FALSE)
+
+write.csv(methylation_result_df, "comparison/methylation_result.csv", row.names=FALSE, quote=FALSE)
+
+# write.csv(methylation_result_df, "/nfs/turbo/sph-ligen/wangmk/AgePred/comparison/methylation_result.csv",
+#           row.names=FALSE, quote=FALSE)
 
 
 # then look at gene expression
@@ -256,7 +265,10 @@ for (j in 1:length(tissues)){
 }
 
 
-write.csv(geneexp_result_df, "comparison/geneexp_result.csv",
-          row.names=FALSE, quote=FALSE)
+
+write.csv(geneexp_result_df, "comparison/geneexp_result.csv", row.names=FALSE, quote=FALSE)
+
+# write.csv(geneexp_result_df, "/nfs/turbo/sph-ligen/wangmk/AgePred/comparison/geneexp_result.csv",
+#           row.names=FALSE, quote=FALSE)
 
 
