@@ -1,0 +1,13 @@
+.Rhistory
+.Rproj.user/
+*.png
+*.svg
+*.csv
+archived/
+*.xlsx
+*.feather
+*.out
+*.pdf
+*.Rproj
+*.txt
+extdata/
