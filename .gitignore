@@ -1,0 +1,14 @@
+
+*.pdf
+*.png
+*.svg
+*.xlsx
+*.csv
+logs/
+*.out
+archived/
+extdata/
+*.Rproj
+*.Rproj.user/
+.Rhistory
+
