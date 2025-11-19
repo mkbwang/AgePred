@@ -14,10 +14,12 @@
 
 module load Rtidyverse/4.4.0
 
+echo "Running deconvolution with nonnegative constraint only"
+Rscript --vanilla methylation_train_deconv_type0.R -s ${SLURM_ARRAY_TASK_ID}
 echo "Running deconvolution with sum to one constraint only"
 Rscript --vanilla methylation_train_deconv_type1.R -s ${SLURM_ARRAY_TASK_ID}
-echo "Running deconvolution with sum to one constraint and smoothness penalty"
-Rscript --vanilla methylation_train_deconv_type2.R -s ${SLURM_ARRAY_TASK_ID}
+# echo "Running deconvolution with sum to one constraint and smoothness penalty"
+# Rscript --vanilla methylation_train_deconv_type2.R -s ${SLURM_ARRAY_TASK_ID}
 # echo "Running deconvolution without sum to one constraint but with sparseness and smoothness penalty"
 # Rscript --vanilla methylation_train_deconv_type3.R -s ${SLURM_ARRAY_TASK_ID}
 

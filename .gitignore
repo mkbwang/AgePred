@@ -11,5 +11,6 @@ archived/
 *.pdf
 *.Rproj
 *.txt
+*.rds
 extdata/
 

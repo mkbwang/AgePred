@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #SBATCH --job-name=methylation_competitors
-#SBATCH --time=08:00:00
+#SBATCH --time=00:40:00
 #SBATCH --mail-user=wangmk@umich.edu
 #SBATCH --mail-type=END,FAIL,BEGIN
 #SBATCH --array=1-18
