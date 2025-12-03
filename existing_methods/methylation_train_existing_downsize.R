@@ -15,7 +15,7 @@ output_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/existing_methods/"
 
 
 studies_info <- read.csv(file.path(methylation_folder, "studies_info.csv"))
-studies_info <- studies_info %>% filter(Total >= 80 & Max_Age - Min_Age > 30)
+studies_info <- studies_info %>% filter(Total >= 215 & Max_Age - Min_Age > 30)
 studies <- studies_info$Study
 
 library(optparse)
@@ -62,71 +62,103 @@ test_marker[test_marker == 1] <- (max(test_marker[test_marker < 1]) + 1)/2
 test_marker <- log(test_marker) - log(1-test_marker)
 
 
-scaling_params <- robust_scale(train_marker, margin=2)
-train_marker_normalized <- scale_transform(value_mat=train_marker, 
-                                           median_vals=scaling_params$median_vals,
-                                           scale_vals = scaling_params$scale_vals,
-                                           margin=2)
-test_marker_normalized <- scale_transform(value_mat=test_marker, 
-                                          median_vals=scaling_params$median_vals,
-                                          scale_vals = scaling_params$scale_vals,
-                                          margin=2)
 
+
+
+train_sizes <- c(40, 60, 80, 100, 120, 150)
+random_seed <- seq(1, 20)
+
+performance_result_list <- list()
+for (i in 1:4){
+  
+  performance <- data.frame(SampleSize=train_sizes[i],
+                            Seed=random_seed,
+                            EN=0,
+                            RF=0,
+                            LGB=0)
+  print(sprintf("Training data size %d", train_sizes[i]))
+  for (j in 1:5){
+    print(j)
+    set.seed(j)
+    subset_indices <- sample(1:nrow(train_metadata), train_sizes[i])
+    train_ages_subset <- train_ages[subset_indices]
+    train_marker_subset <- train_marker[subset_indices, ]
+    scaling_params <- robust_scale(train_marker_subset, margin=2)
+    train_marker_normalized_subset <- scale_transform(value_mat=train_marker_subset, 
+                                               median_vals=scaling_params$median_vals,
+                                               scale_vals = scaling_params$scale_vals,
+                                               margin=2)
+    test_marker_normalized <- scale_transform(value_mat=test_marker, 
+                                              median_vals=scaling_params$median_vals,
+                                              scale_vals = scaling_params$scale_vals,
+                                              margin=2)
+    
+    # elastic net
+    library(glmnet)
+    
+    en_fit <- cv.glmnet(x=train_marker_normalized_subset, y=train_ages_subset, alpha=0.5,
+                        type.measure="mae")
+    en_coefs <- coef(en_fit, s="lambda.min")
+    en_coefs <- as.vector(en_coefs)
+    
+    en_test_prediction <- predict(en_fit, newx=test_marker_normalized,
+                                  s="lambda.min")
+    
+    performance$EN[j] <- mean(abs(test_metadata$age - en_test_prediction))
+    
+    
+    # random forest
+    library(randomForest)
+    library(caret)
+    
+    rf_fit <- randomForest(x=train_marker_subset,
+                           y=train_ages_subset,
+                           mtry=round(sqrt(ncol(train_marker))))
+    rf_test_prediction <- predict(rf_fit, newdata=test_marker)
+    
+    performance$RF[j] <- mean(abs(test_metadata$age - rf_test_prediction))
+    
+    # lightGBM
+    library(lightgbm)
+    dtrain <- lgb.Dataset(data=as.matrix(train_marker_subset),
+                          label=train_ages_subset)
+    params <- list(
+      objective="regression",
+      metric="mae",
+      learning_rate=0.05,
+      max_depth=4,
+      num_leaves=30,
+      feature_fraction=0.6,
+      lambda_l1=0.4,
+      lambda_l2=0.4,
+      verbose=-1
+    )
+    
+    lgb_fit <-suppressWarnings(suppressMessages(lgb.train(
+      params=params,
+      data=dtrain,
+      nrounds=50
+    )))
+    
+    lgb_test_prediction <- predict(lgb_fit, newdata=test_marker)
+    performance$LGB[j] <- mean(abs(test_metadata$age - lgb_test_prediction))
+    
+  }
+  
+  performance_result_list[[i]] <- performance
+  
+}
+
+
+performance_result_combined <- do.call(rbind, performance_result_list)
 
 #### existing methods
-# elastic net
-library(glmnet)
-
-en_fit <- cv.glmnet(x=train_marker_normalized, y=train_ages, alpha=0.5,
-                    type.measure="mae")
-en_coefs <- coef(en_fit, s="lambda.min")
-en_coefs <- as.vector(en_coefs)
-
-en_test_prediction <- predict(en_fit, newx=test_marker_normalized,
-                              s="lambda.min")
-
-test_metadata$EN <- as.vector(en_test_prediction)
-
-# random forest
-library(randomForest)
-library(caret)
-
-rf_fit <- randomForest(x=train_marker,
-                       y=train_ages,
-                       mtry=round(sqrt(ncol(train_marker))))
-rf_test_prediction <- predict(rf_fit, newdata=test_marker)
-
-test_metadata$RF <- rf_test_prediction
-
-# lightGBM
-library(lightgbm)
-dtrain <- lgb.Dataset(data=as.matrix(train_marker),
-                      label=train_ages)
-params <- list(
-    objective="regression",
-    metric="mae",
-    learning_rate=0.05,
-    max_depth=4,
-    num_leaves=30,
-    feature_fraction=0.6,
-    lambda_l1=0.4,
-    lambda_l2=0.4
-)
-
-lgb_fit <- lgb.train(
-    params=params,
-    data=dtrain,
-    nrounds=50
-)
 
 
-lgb_test_prediction <- predict(lgb_fit, newdata=test_marker)
+ofile <- sprintf("methylation_%s_train_downsize.csv", study)
 
-test_metadata$LGB <- lgb_test_prediction
-
-ofile <- sprintf("methylation_%s.csv", study)
-
-write.csv(test_metadata, file = file.path(output_folder, "output", ofile),
+write.csv(performance_result_combined, 
+          file = file.path(output_folder, "output", ofile),
            row.names=TRUE)
 
 # # support vector regression

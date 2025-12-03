@@ -114,7 +114,7 @@ for (i in 1:nrow(test_metadata)){
   # deconvolution with raw methylation values
   fitted_result_original <- deconvolution(XXt=XXt_original, XY=XY_original,
                                           labels=age_labels, log=FALSE, standardize = FALSE,
-                                          sum_constraint = T)
+                                          sum_constraint = F)
   test_metadata$Prediction_mean_original[i] <- fitted_result_original$estim
   weights_original[i, ] <- fitted_result_original$normalized_weights
   test_metadata$Prediction_mode_original[i] <- age_labels[which.max(fitted_result_original$normalized_weights)]
@@ -123,7 +123,7 @@ for (i in 1:nrow(test_metadata)){
   # deconvolution with normalized methylation values
   fitted_result_normalized <- deconvolution(XXt=XXt_normalized, XY=XY_normalized,
                                           labels=age_labels, log=FALSE, standardize = FALSE,
-                                          sum_constraint = T)
+                                          sum_constraint = F)
   test_metadata$Prediction_mean_normalized[i] <- fitted_result_normalized$estim
   weights_normalized[i, ] <- fitted_result_normalized$normalized_weights
   test_metadata$Prediction_mode_normalized[i] <- age_labels[which.max(fitted_result_normalized$normalized_weights)]
@@ -144,7 +144,7 @@ output <- list(Prediction=test_metadata,
                Weights_original=weights_original,
                Weights_normalized=weights_normalized)
 
-ofile <- sprintf("methylation_%s_type1.xlsx", study)
+ofile <- sprintf("methylation_%s_type0.xlsx", study)
 
 write.xlsx(output, file = file.path(method_folder, "deconvolution", ofile),
            rowNames=TRUE)
