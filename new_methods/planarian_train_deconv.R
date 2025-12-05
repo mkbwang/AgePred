@@ -11,13 +11,13 @@ rm(list=ls())
 # methylation_folder <- "extdata/methylation/" # TODO: folder to change
 # method_folder <- "new_methods/"
 
-planarian_folder <- "planarian_data" #TODO: change on greatlakes
-method_folder <- "new_methods" #TODO: change on greatlakes
+planarian_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/planarian_data" #TODO: change on greatlakes
+method_folder <- "/nfs/turbo/sph-ligen/wangmk/AgePred/new_methods" #TODO: change on greatlakes
 
 
 
 library(optparse)
-option_list <- list(make_option(c("-s", "--seed")="integer", default=1,
+option_list <- list(make_option(c("-s", "--seed"), type="integer", default=1,
                                 help="seed [default=1]"))
 opt_parser <- OptionParser(option_list=option_list)
 opt <- parse_args(opt_parser)
@@ -25,8 +25,8 @@ loo_id <- opt$seed
 
 
 # load data and metadata
-gene_tpm <- read.csv(file.path("planarian_data", "version2.csv"))
-metadata <- read.csv(file.path("planarian_data", "meta_version2.csv"))
+gene_tpm <- read.csv(file.path(planarian_folder, "version2.csv"))
+metadata <- read.csv(file.path(planarian_folder, "meta_version2.csv"))
 
 
 rownames(gene_tpm) <- gene_tpm$X
@@ -35,7 +35,6 @@ sample_names <- colnames(gene_tpm)
 
 
 # leave one sample out as test
-loo_id <- 25 # TODO: remove when on great lakes
 train_ids <- setdiff(seq(1, 40), loo_id)
 
 train_samples <- sample_names[train_ids]
@@ -289,7 +288,7 @@ for (k in 1:5){
                             lambda1=lambdas[m, 1]*trace_original/6/length(age_labels),
                             lambda2=lambdas[m, 2]*mean_XY_original,
                             sum_constraint = F)
-    pred_cv <- fit_cv$normalized_weights %*% as.matrix(train_marker_median[, foldids[[k]]])
+    pred_cv <- fit_cv$weights %*% as.matrix(train_marker_median[, foldids[[k]]])
     mse_cv_original[m, k] <- mean((test_marker[foldids[[k]]] - pred_cv)^2)
   }
 
@@ -325,7 +324,7 @@ for (k in 1:5){
                             lambda1=lambdas[m, 1]*trace_normalized/6/length(age_labels),
                             lambda2=lambdas[m, 2]*mean_XY_normalized,
                             sum_constraint = F)
-    pred_cv <- fit_cv$normalized_weights %*% as.matrix(train_marker_median_normalized[, foldids[[k]]])
+    pred_cv <- fit_cv$weights %*% as.matrix(train_marker_median_normalized[, foldids[[k]]])
     mse_cv_normalized[m, k] <- mean((test_marker_normalized[foldids[[k]]] - pred_cv)^2)
   }
 }
